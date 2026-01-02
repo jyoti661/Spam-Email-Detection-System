@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spam Email Detection Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>📧 Spam Email Detection Dashboard</h1>
+    <p class="subtitle"><b>AI-Based Real-Time Email Classification System</b></p>
+
+    <div class="card">
+        <h2>Enter Email Content</h2>
+        <form method="POST">
+            <textarea name="email" placeholder="Paste email content here..." required></textarea>
+            <button type="submit">Analyze Email</button>
+        </form>
+    </div>
+
+    {% if results %}
+    <div class="card">
+        <h2>Analysis Results</h2>
+
+        {% for r in results %}
+        <div class="result-card {% if r.is_spam %}spam{% else %}clean{% endif %}">
+            <h3>
+                {% if r.is_spam %}
+                    🚨 Spam Detected
+                {% else %}
+                    ✅ Not Spam
+                {% endif %}
+            </h3>
+
+            <p><b>Spam Score:</b> {{ r.spam_score }}</p>
+            <p><b>Spam Probability:</b> {{ r.spam_probability }}%</p>
+
+            <p><b>AI Summary:</b><br>
+                <em>{{ r.summary }}</em>
+            </p>
+
+            <span class="risk {{ r.risk_level | lower | replace(' ', '-') }}">
+                {{ r.risk_level }}
+            </span>
+
+            <p><b>Matched Keywords:</b>
+                {{ r.matched_keywords | join(", ") if r.matched_keywords else "None" }}
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 🔥 TOP SPAM WORDS SECTION -->
+    <div class="card">
+        <h2>📊 Top 5 Spam Words</h2>
+
+        {% set top_words = results[0].top_spam_words %}
+
+        {% if top_words %}
+        <div class="spam-bar-container">
+            {% for word, count in top_words %}
+            <div class="spam-bar">
+                <label>{{ loop.index }}. {{ word | capitalize }}</label>
+                <div class="bar-bg">
+                    <div class="bar-fill">
+                        Count: {{ count }} &nbsp; | &nbsp; 100%
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+            <p>No spam keywords detected.</p>
+        {% endif %}
+    </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+</html>
